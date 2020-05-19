@@ -176,7 +176,61 @@ summary(initial_model)$adj.r.squared
 
 ### Section 2.2 Model Selection
 
+
+
+
 Now either using `BAS` another stepwise selection procedure choose the "best" model you can, using your initial model as your starting point. Try at least two different model selection methods and compare their results. Do they both arrive at the same model or do they disagree? What do you think this means?
+
+**Adjusted R squared selection**
+
+Using the adjusted R squared selection technique we will attempt to find a better model than the initial defined above. This works by systematically removing variables from the model to see if their removal improves on the base adjusted R squared value.
+
+```{r}
+#  Drop Overall.Qual
+summary(lm(log(price) ~ log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop log(area)
+summary(lm(log(price) ~ Overall.Qual + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Total.Bsmt.SF
+summary(lm(log(price) ~ Overall.Qual + log(area) + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Exter.Qual
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop X1st.Flr.SF
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Bsmt.Qual
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Year.Built
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Garage.Cars
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Kitchen.Qual + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Kitchen.Qual
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Garage.Area, data = ames_train))$adj.r.squared
+```
+```{r}
+#  Drop Garage.Area
+summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual, data = ames_train))$adj.r.squared
+```
+
+Dropping the basement quaility variable improves the adjusted r squared value from x to y. Running the selection process again on the candidate model (droped bsmt quality).
+
+
+
+
 
 Step AIC:
 ```{r}
@@ -190,10 +244,19 @@ step BIC
 #summary(step_bic_res)
 ```
 
-BMA with BIC
+BAS
 ```{r}
 model_bas_bic <- bas.lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
 summary(model_bas_bic)
+
+model_bas_no_baseq <- bas.lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
+summary(model_bas_no_baseq)
+
+plot(model_bas_no_baseq, ask = F)
+
+image(model_bas_no_baseq, rotate = F)
+
+#plot(coef(model_bas_no_baseq), ask = F)
 ```
 
 * * *
