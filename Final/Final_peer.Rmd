@@ -161,8 +161,6 @@ Based on your EDA, select *at most* 10 predictor variables from “ames_train”
 
 **Initial Model**
 
-log(Garage.Area) + Kitchen.Qual
-
 Using what we have learnt in the EDA an initial model can be defined as:
 ```{r}
 is.nan.data.frame <- function(x)
@@ -316,8 +314,11 @@ ames_test[sapply(ames_test, is.factor)] <- lapply(ames_test[sapply(ames_test, is
 pred_test = predict(model_bas_bic,newdata=ames_test,estimator="BMA")
 
 resid_test = ames_test$price - exp(pred_test$fit)
-rmse_test = sqrt(mean(resid_test^2))
-paste("The out-of-sample root-mean-squared error is",format(rmse_test,digits=6),"dollars.")
+
+
+rmse_test = sqrt(mean(resid_test^2, na.rm=TRUE))
+rmse_test
+#paste("The out-of-sample root-mean-squared error is",format(rmse_test,digits=6),"dollars.")
 ```
 
 Use your model from above to generate predictions for the housing prices in the test data set.  Are the predictions significantly more accurate (compared to the actual sales prices) for the training data than the test data?  Why or why not? Briefly explain how you determined that (what steps or processes did you use)?
@@ -347,9 +348,8 @@ Provide the summary table for your model.
 
 NOTE: Write your written response to section 3.1 here. Delete this note before you submit your work.
 
-
 ```{r model_playground}
-model_final <- bas.lm(log(price) ~ Overall.Qual + log(area) + Exter.Qual + X1st.Flr.SF + Kitchen.Qual + Year.Built + Year.Remod.Add + Full.Bath + TotRms.AbvGrd + Year.Built + Fireplaces + Foundation + Heating.QC + Wood.Deck.SF + Half.Bath, data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
+model_final <- bas.lm(log(price) ~ Overall.Qual + log(area) +Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Year.Built + Garage.Cars + Garage.Area + Kitchen.Qual + Year.Remod.Add + Full.Bath + TotRms.AbvGrd + Fireplaces + BsmtFin.SF.1 + Heating.QC + Wood.Deck.SF +  Lot.Frontage + Bsmt.Full.Bath + Open.Porch.SF + log(Lot.Area), data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
 summary(model_final)
 ```
 
