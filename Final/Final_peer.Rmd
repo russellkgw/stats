@@ -17,6 +17,8 @@ In order to better assess the quality of the model you will produce, the data ha
 
 ```{r load, message = FALSE}
 load("ames_train.Rdata")
+load("ames_test.Rdata")
+load("ames_validation.Rdata")
 ```
 
 Use the code block below to load any necessary packages
@@ -226,22 +228,6 @@ summary(lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + 
 
 Dropping the basement quaility variable improves the adjusted r squared value from x to y. Running the selection process again on the candidate model (droped bsmt quality).
 
-
-
-
-
-Step AIC:
-```{r}
-# step_aic_res = step(initial_model)
-# summary(step_aic_res)
-```
-
-step BIC
-```{r}
-#step_bic_res = step(initial_model, direction="both", k=nrow(ames_train))
-#summary(step_bic_res)
-```
-
 BAS
 ```{r}
 model_bas_bic <- bas.lm(log(price) ~ Overall.Qual + log(area) + Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Bsmt.Qual + Year.Built + Garage.Cars + Kitchen.Qual + Garage.Area, data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
@@ -260,7 +246,7 @@ image(model_bas_no_baseq, rotate = F)
 * * *
 
 ### Section 2.3 Initial Model Residuals
-One way to assess the performance of a model is to examine the model's residuals. In the space below, create a residual plot for your preferred model from above and use it to assess whether your model appears to fit the data well. Comment on any interesting structure in the residual plot (trend, outliers, etc.) and briefly discuss potential implications it may have for your model and inference / prediction you might produce.
+<i>One way to assess the performance of a model is to examine the model's residuals. In the space below, create a residual plot for your preferred model from above and use it to assess whether your model appears to fit the data well. Comment on any interesting structure in the residual plot (trend, outliers, etc.) and briefly discuss potential implications it may have for your model and inference / prediction you might produce.</i>
 
 ```{r model_resid}
 pred_train=predict(model_bas_bic,ames_train,estimator="BMA")
@@ -272,23 +258,17 @@ ggplot(data = plot_dat, aes(x = fitted, y = resid)) +
   xlab("Residuals")
 
 ```
-
 ```{r}
 ggplot(data = plot_dat, aes(x = resid)) +
   geom_histogram(bins=50) + xlab("Residuals")
 ```
-
 ```{r}
 ggplot(data = plot_dat, aes(sample = resid)) + stat_qq()
 ```
 
 ### Section 2.4 Initial Model RMSE
 
-You can calculate it directly based on the model output. Be specific about the units of your RMSE (depending on whether you transformed your response variable). The value you report will be more meaningful if it is in the original units (dollars).
-
-* * *
-
-NOTE: Write your written response to section 2.4 here. Delete this note before you submit your work.
+<i>You can calculate it directly based on the model output. Be specific about the units of your RMSE (depending on whether you transformed your response variable). The value you report will be more meaningful if it is in the original units (dollars).</i>
 
 
 ```{r model_rmse}
@@ -299,31 +279,16 @@ sqrt(mean(resid_train^2))
 
 ### Section 2.5 Overfitting 
 
-The process of building a model generally involves starting with an initial model (as you have done above), identifying its shortcomings, and adapting the model accordingly. This process may be repeated several times until the model fits the data reasonably well. However, the model may do well on training data but perform poorly out-of-sample (meaning, on a dataset other than the original training data) because the model is overly-tuned to specifically fit the training data. This is called “overfitting.” To determine whether overfitting is occurring on a model, compare the performance of a model on both in-sample and out-of-sample data sets. To look at performance of your initial model on out-of-sample data, you will use the data set `ames_test`.
+<i>The process of building a model generally involves starting with an initial model (as you have done above), identifying its shortcomings, and adapting the model accordingly. This process may be repeated several times until the model fits the data reasonably well. However, the model may do well on training data but perform poorly out-of-sample (meaning, on a dataset other than the original training data) because the model is overly-tuned to specifically fit the training data. This is called “overfitting.” To determine whether overfitting is occurring on a model, compare the performance of a model on both in-sample and out-of-sample data sets. To look at performance of your initial model on out-of-sample data, you will use the data set `ames_test`.</i>
 
 ```{r loadtest, message = FALSE}
-load("ames_test.Rdata")
-
-ames_test = ames_test %>% filter(Neighborhood != "Landmrk")
-
-dim(ames_train)
-dim(ames_test)
-
 ames_test[sapply(ames_test, is.factor)] <- lapply(ames_test[sapply(ames_test, is.factor)], as.numeric)
-
 pred_test = predict(model_bas_bic,newdata=ames_test,estimator="BMA")
-
-resid_test = ames_test$price - exp(pred_test$fit)
-
-
-rmse_test = sqrt(mean(resid_test^2, na.rm=TRUE))
-rmse_test
-#paste("The out-of-sample root-mean-squared error is",format(rmse_test,digits=6),"dollars.")
+sqrt(mean((ames_test$price - exp(pred_test$fit))^2, na.rm=TRUE))
 ```
 
 Use your model from above to generate predictions for the housing prices in the test data set.  Are the predictions significantly more accurate (compared to the actual sales prices) for the training data than the test data?  Why or why not? Briefly explain how you determined that (what steps or processes did you use)?
 
-* * *
 
 NOTE: Write your written response to section 2.5 here. Delete this note before you submit your work.
 
@@ -342,125 +307,114 @@ Carefully document the process that you used to come up with your final model, s
 
 ### Section 3.1 Final Model
 
-Provide the summary table for your model.
-
-* * *
-
-NOTE: Write your written response to section 3.1 here. Delete this note before you submit your work.
+<i>Provide the summary table for your model.</i>
 
 ```{r model_playground}
 model_final <- bas.lm(log(price) ~ Overall.Qual + log(area) +Total.Bsmt.SF + Exter.Qual + X1st.Flr.SF + Year.Built + Garage.Cars + Garage.Area + Kitchen.Qual + Year.Remod.Add + Full.Bath + TotRms.AbvGrd + Fireplaces + BsmtFin.SF.1 + Heating.QC + Wood.Deck.SF +  Lot.Frontage + Bsmt.Full.Bath + Open.Porch.SF + log(Lot.Area), data = ames_train,prior = "BIC", modelprior = uniform(), initprobs = "eplogp")
 summary(model_final)
 ```
 
-* * *
-
 ### Section 3.2 Transformation
 
-Did you decide to transform any variables?  Why or why not? Explain in a few sentences.
+<i>Did you decide to transform any variables?  Why or why not? Explain in a few sentences:</i>
 
-* * *
+Yes, as discovered in the above exploritory data analasys the area variable was log-transformed as doing so proved to provide a better fit for the model. This may be due to the ability of the log to manage the wide variance in area values.
 
-NOTE: Write your written response to section 3.2 here. Delete this note before you submit your work.
-
-```{r model_assess}
-```
-
-* * *
+The price was also logged. This also leading to a better fit, probably for similiar reasons as stated for the area.
 
 ### Section 3.3 Variable Interaction
 
-Did you decide to include any variable interactions? Why or why not? Explain in a few sentences.
-
-* * *
-
-NOTE: Write your written response to section 3.3 here. Delete this note before you submit your work.
-
-```{r model_inter}
-```
+<i>Did you decide to include any variable interactions? Why or why not? Explain in a few sentences.</i>
 
 * * *
 
 ### Section 3.4 Variable Selection
 
-What method did you use to select the variables you included? Why did you select the method you used? Explain in a few sentences.
+<i>What method did you use to select the variables you included? Why did you select the method you used? Explain in a few sentences.</i>
 
-* * *
+The first models variables where selected by their ability to improve the adjusted R squared value of the model under review. This values is indicitive of how well the model fits the data which should lead to better predictions and lower errors.
 
-NOTE: Write your written response to section 3.4 here. Delete this note before you submit your work.
-
-```{r model_select}
-```
-
-* * *
+The final model was defined using the Bayesian Model Averaging uwing the BAS import. This method reduces or removes model coefficients that lead to a lowwer posterior probability of inclusion. Allowing for more information to be preserved. This approach also limits model overfitting by reducing the impact of low posterior probability variables.
 
 ### Section 3.5 Model Testing
 
-How did testing the model on out-of-sample data affect whether or how you changed your model? Explain in a few sentences.
+<i>How did testing the model on out-of-sample data affect whether or how you changed your model? Explain in a few sentences.</i>
 
-* * *
-
-NOTE: Write your written response to section 3.5 here. Delete this note before you submit your work.
-
-```{r model_testing}
+Looking at the RMSE of the training data:
+```{r}
+pred_train_final = predict(model_final,newdata=ames_train,estimator="BMA")
+final_rmse_train = sqrt(mean((ames_train$price - exp(pred_train_final$fit))^2, na.rm=TRUE))
+final_rmse_train
 ```
 
-* * *
+Looking at the RMSE of the testing data:
+```{r}
+pred_test_final = predict(model_final,newdata=ames_test,estimator="BMA")
+final_rmse_test = sqrt(mean((ames_test$price - exp(pred_test_final$fit))^2, na.rm=TRUE))
+final_rmse_test
+```
+
+The model was tested by its ability to reduce the RMSE (Root Mean Square Error). The RMSE for the test data x was less than the RMSE for the training data y so overfitting did not happend so the model has the ability ot generalise.
 
 ## Part 4 Final Model Assessment
 
 ### Section 4.1 Final Model Residual
 
-For your final model, create and briefly interpret an informative plot of the residuals.
+<i>For your final model, create and briefly interpret an informative plot of the residuals.</i>
 
-* * *
+```{r}
+#final_model_resid=predict(model_final,ames_train,estimator="BMA")
+#final_model_resid_nona=na.omit(ames_train$price - exp(final_model_resid$fit))
+#plot_data_final=data.frame(fitted = na.omit(exp(final_model_resid$fit)), resid = final_model_resid_nona)
+#ggplot(data = plot_data_final, aes(x = fitted, y = resid)) + geom_point() + xlab("Residuals")
 
-NOTE: Write your written response to section 4.1 here. Delete this note before you submit your work.
+```
+```{r}
+#ggplot(data = plot_data_final, aes(x = resid)) + geom_histogram(bins=50) + xlab("Residuals")
+```
+```{r}
+#ggplot(data = plot_data_final, aes(sample = resid)) + stat_qq()
+```
 
-* * *
+
 
 ### Section 4.2 Final Model RMSE
 
-For your final model, calculate and briefly comment on the RMSE.
+<i>For your final model, calculate and briefly comment on the RMSE.</i>
 
-* * *
+Final models training RMSE is:
+```{r}
+final_rmse_train
+```
 
-NOTE: Write your written response to section 4.2 here. Delete this note before you submit your work.
+Final models testing RMSE is:
+```{r}
+final_rmse_test
+```
 
-* * *
 
 ### Section 4.3 Final Model Evaluation
 
-What are some strengths and weaknesses of your model?
-
-* * *
-
-NOTE: Write your written response to section 4.3 here. Delete this note before you submit your work.
-
-* * *
+<i>What are some strengths and weaknesses of your model?</i>
+The model does a fair job at predicting house prices. It is about $26000 off the price either way. The model does well in the testing and validation sets, implying that there was little to no over fitting. The model has a few issues with outliers such as trying to forecast large houses.
 
 ### Section 4.4 Final Model Validation
 
-Testing your final model on a separate, validation data set is a great way to determine how your model will perform in real-life practice. 
+<i>Testing your final model on a separate, validation data set is a great way to determine how your model will perform in real-life practice. 
 
 You will use the “ames_validation” dataset to do some additional assessment of your final model. Discuss your findings, be sure to mention:
 * What is the RMSE of your final model when applied to the validation data?  
 * How does this value compare to that of the training data and/or testing data?
 * What percentage of the 95% predictive confidence (or credible) intervals contain the true price of the house in the validation data set?  
-* From this result, does your final model properly reflect uncertainty?
+* From this result, does your final model properly reflect uncertainty?</i>
 
-```{r loadvalidation, message = FALSE}
-load("ames_validation.Rdata")
+```{r}
+pred_valid_final = predict(model_final,newdata=ames_validation,estimator="BMA")
+final_rmse_valid = sqrt(mean((ames_validation$price - exp(pred_valid_final$fit))^2, na.rm=TRUE))
+final_rmse_valid
 ```
 
-* * *
-
-NOTE: Write your written response to section 4.4 here. Delete this note before you submit your work.
-
-```{r model_validate}
-```
-
-* * *
+Bith
 
 ## Part 5 Conclusion
 
