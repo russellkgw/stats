@@ -79,7 +79,7 @@ Looking at the distribution shape of the Lot.Area:
 ggplot(data = ames_train, aes(x = Lot.Area)) + geom_histogram(bins = 100) + labs(title="Lot.Area distribution", y="House Lot.Area", x="Lot.Area")
 ```
 
-This perhaps gives some insight into the reason why the correlation is lower than expected. The distribution is very narrow, with someextreme outliers. The standard deviation (SD) and IQR reflect this:
+This perhaps gives some insight into the reason why the correlation is lower than expected. The distribution is very narrow, with some extreme outliers. The standard deviation (SD) and IQR reflect this:
 
 ```{r}
 summary_stats_price = ames_train %>% select(Lot.Area) %>% summarize(std_dev = sd(Lot.Area), iqr = IQR(Lot.Area))
@@ -370,7 +370,7 @@ final_rmse_train = sqrt(mean((ames_train$price - exp(pred_train_final$fit))^2, n
 final_rmse_train
 ```
 
-gives a value of 30325.67 dollars and the RMSE of the testing data for the final model is:
+gives a value of 23944.03 dollars and the RMSE of the testing data for the final model is:
 
 ```{r}
 pred_test_final = predict(model_final,newdata=ames_test,estimator="BMA")
@@ -378,7 +378,7 @@ final_rmse_test = sqrt(mean((ames_test$price - exp(pred_test_final$fit))^2, na.r
 final_rmse_test
 ```
 
-21597.02 dollars. The testing value is less than the training value implying that the model has not over fitted the data and like the initial model can be generalised.
+20954.92 dollars. The testing value is less than the training value implying that the model has not over fitted the data and like the initial model can be generalised.
 
 ## Part 4 Final Model Assessment
 
@@ -422,7 +422,7 @@ Some of most useful explanatory variables are area related, specifically log(are
 
 <i>For your final model, calculate and briefly comment on the RMSE.</i>
 
-This is briefly touched on in a previous section. But the The final models training RMSE comes in at $30,325.67
+This is briefly touched on in a previous section. But the The final models training RMSE comes in at 23944.03 dollars.
 
 ```{r}
 final_rmse_train
@@ -433,23 +433,23 @@ and the testing RMSE for the final model
 ```{r}
 final_rmse_test
 ```
-is 21,597.02 dollars. The testing value is less than the training implying that the model is not overfitting the data and should allow for generalization.
+is 20954.92 dollars. The testing value is less than the training implying that the model is not overfitting the data and should allow for generalization.
 
 The RMSE on the validation set:
 ```{r}
 ames_validation[sapply(ames_validation, is.factor)] <- lapply(ames_validation[sapply(ames_validation, is.factor)], as.numeric)
-pred_valid_final = predict(model_final,newdata=ames_validation,estimator="BMA", se.fit = TRUE)
+pred_valid_final = predict(model_final,newdata=ames_validation,estimator="BMA")
 final_rmse_valid = sqrt(mean((ames_validation$price - exp(pred_valid_final$fit))^2, na.rm=TRUE))
 final_rmse_valid
 ```
 
-is even lower than the testing RMSE at 21,415.44 dollars, again implying that the model is able to generalise to new inputs.
+is slightly above the testing RMSE at 21049.12 dollars. The difference is less than 100 dollars or about 0.5%. Again this result is implying that the model is able to generalise to new inputs.
 
 ### Section 4.3 Final Model Evaluation
 
 <i>What are some strengths and weaknesses of your model?</i>
 
-The model does a fair job at predicting house prices. It is just under $26000 off the price either way. The model does well in the testing and validation sets, implying that there was little to no over fitting. The model seems to have a few issues with outliers such as trying to forecast large houses.
+The model does a fair job at predicting house prices. Its about $22500 off the price either way. The model does well in the testing and validation sets, implying that there was little to no over fitting. The model seems to have a few issues with outliers such as trying to forecast large houses.
 
 ### Section 4.4 Final Model Validation
 
@@ -461,7 +461,7 @@ You will use the “ames_validation” dataset to do some additional assessment 
 * What percentage of the 95% predictive confidence (or credible) intervals contain the true price of the house in the validation data set?  
 * From this result, does your final model properly reflect uncertainty?</i>
 
-As disucssed above the RMSE of the validation set for the final model (in dollars) is 21,415.44. This is less than the testing RMSE of 21,597.02 (dollars) and the training RMSE of 30,325.67 (dollars). Which indicates that the model has the ability to generalise to unseen inputs.
+As disucssed above the RMSE of the validation set for the final model (in dollars) is 21049.12. This is about the same as the testing RMSE of 20954.92 (dollars) (difference of 0.5%) and less than the training RMSE of 23944.03 (dollars). Which indicates that the model has the ability to generalise to unseen inputs.
 
 Looking at the confidence intervals.
 
@@ -484,4 +484,4 @@ An initial model was obtained by following a systematic approach by looking for 
 
 A final model was developed using the Bayesian Model averaging via the BAS package. This method penalises model coefficients that lead to a lower posterior probability of inclusion. The final model contained 20 variables. The model had the ability to generalize well on unseen data, that is it did not have a higher error on the testing or validation set as what it did on the training data.
 
-The model could be used to reliably predict average sales of houses in the area but could get tripped up by outliers.
+The model could be used to reliably predict average sales of houses in the area but could get tripped up by outliers, or values towards the end of the distribution.
